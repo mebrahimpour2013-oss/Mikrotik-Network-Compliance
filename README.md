@@ -1,285 +1,370 @@
-# MikroTik Network Compliance Automation
+MikroTik Network Compliance Automation
 
-A Python-based, read-only security and configuration assessment tool for MikroTik RouterOS devices.
+A Python-based network security assessment tool for MikroTik RouterOS environments.
 
-The project connects to a MikroTik router through the RouterOS API, evaluates a defined set of operational and security controls, and produces structured PASS / WARNING / FAIL results with an overall compliance score.
+This project connects to a MikroTik router through the RouterOS API, evaluates a set of operational and security controls, calculates an assessment score, and generates both console and HTML reports.
 
-## Overview
+The project is designed as a practical network automation and security assessment solution rather than a configuration-changing tool.
 
-MikroTik Network Compliance Automation is designed to support repeatable security reviews of MikroTik-based network infrastructure.
+---
 
-Instead of manually reviewing individual RouterOS settings, the tool collects relevant configuration data through the API and evaluates predefined controls covering:
+Overview
 
-- Management services
-- Network services
-- Firewall configuration
-- WAN protection
-- NAT
-- IP addressing
-- DHCP
-- DNS
-- VPN
-- RouterOS users
+MikroTik devices are widely used in enterprise, branch-office, ISP, and infrastructure environments.
 
-The assessment is read-only. The tool does not modify the router configuration.
+Regular security and configuration assessments can help identify:
 
-## Key Capabilities
+- Unnecessary or insecure services
+- Unrestricted management access
+- Missing firewall protections
+- DNS configuration risks
+- VPN configuration status
+- User/account configuration
+- Network addressing and DHCP configuration
+- Basic security hardening gaps
 
-- RouterOS device identification
-- RouterOS version, hardware and architecture detection
-- Management service assessment
-- FTP, Telnet, HTTP and API security checks
-- WinBox and SSH management access restriction checks
-- Firewall rule assessment
-- Established/related connection handling check
-- Invalid traffic protection check
-- WAN input and forwarding protection checks
-- NAT masquerade validation
-- Active IP address detection
-- DHCP server assessment
-- DNS configuration assessment
-- Remote DNS request check
-- L2TP/IPsec configuration assessment
-- RouterOS user assessment
-- PASS / WARNING / FAIL classification
-- Automated compliance score calculation
-- Console-based compliance results
-- HTML compliance report generation
+This project automates these checks through the MikroTik RouterOS API.
 
-## Assessment Areas
+The assessment is read-only and does not modify router configuration.
 
-| Area | Examples of Checks |
-|---|---|
-| Services | FTP, Telnet, HTTP, API, API-SSL |
-| Management | WinBox and SSH access restrictions |
-| Firewall | Active rules, established/related, invalid traffic |
-| WAN Security | Input and forwarding protection |
-| NAT | Source NAT / masquerade |
-| Network | Active IP addresses |
-| DHCP | Active DHCP servers |
-| DNS | DNS servers and remote requests |
-| VPN | L2TP and IPsec usage |
-| Users | Active RouterOS users |
+---
 
-## Assessment Model
+Key Capabilities
 
-Each control produces one of three states:
+- Connect to MikroTik RouterOS through the API
+- Collect system and device information
+- Check RouterOS services
+- Evaluate management-service exposure
+- Inspect firewall rules
+- Check NAT configuration
+- Inspect IP addressing
+- Check DHCP configuration
+- Evaluate DNS configuration
+- Check VPN/L2TP configuration
+- Inspect configured users
+- Calculate an overall assessment score
+- Display results in the terminal
+- Generate an HTML assessment report
 
-### PASS
+---
 
-The evaluated configuration satisfies the defined requirement.
+Assessment Areas
 
-### WARNING
+Area| Examples of Checks
+System| RouterOS version, board, architecture
+Services| FTP, Telnet, WWW, API, API-SSL
+Management| Winbox and SSH access restrictions
+Firewall| Established/related, invalid traffic, WAN protection
+NAT| Masquerade configuration
+IP Configuration| Configured addresses
+DHCP| DHCP configuration
+DNS| DNS servers and remote-request configuration
+VPN| L2TP/IPsec status
+Users| Configured RouterOS accounts
 
-The configuration requires attention or the tool cannot establish a strong PASS/FAIL condition from the available data.
+---
 
-### FAIL
+Assessment Model
 
-The evaluated configuration does not satisfy the defined requirement.
+Each check produces a result such as:
 
-An overall score is calculated from the number of controls that receive a PASS result.
+- PASS — expected security/configuration condition detected
+- WARNING — configuration exists but requires review
+- FAIL — potentially insecure or missing configuration detected
 
-> Important: The score represents this project's defined assessment rules. It should not be interpreted as certification against a specific external security standard unless the rule set is explicitly mapped and validated against that standard.
+The project calculates a percentage score based on the checks performed.
 
-## Architecture
+Important
 
-`text
-                  MikroTik RouterOS
-                         │
-                         │ RouterOS API
-                         ▼
-              ┌─────────────────────┐
-              │  Python Compliance  │
-              │       Engine        │
-              └──────────┬──────────┘
-                         │
-          ┌──────────────┼──────────────┐
-          │              │              │
-          ▼              ▼              ▼
-      Services        Firewall       Network
-      Management      WAN/NAT        DHCP/DNS
-          │              │              │
-          └──────────────┼──────────────┘
-                         ▼
-                Compliance Results
-                         │
-              ┌──────────┴──────────┐
-              ▼                     ▼
-        Console Output          HTML Report
+The score is a project-defined assessment metric.
 
-#Project Structure
+It should not be interpreted as formal certification or proof of compliance with a specific security standard unless the checks and scoring model are explicitly mapped and validated against that standard.
+
+---
+
+Architecture
+
+The current implementation intentionally keeps the assessment logic in two executable Python scripts:
+
+                    +----------------------+
+                    |   MikroTik RouterOS  |
+                    +----------+-----------+
+                               |
+                         RouterOS API
+                               |
+                               v
+                +--------------------------+
+                |   Python Assessment      |
+                |          Logic            |
+                +------------+-------------+
+                             |
+              +--------------+--------------+
+              |                             |
+              v                             v
+     +------------------+          +------------------+
+     | Console Results  |          |   HTML Report    |
+     +------------------+          +------------------+
+
+The project currently uses the same core assessment concepts in:
+
+Mikrotik_compliance.py
+Mikrotik_compliance_HTML.py
+
+The code has intentionally not been over-engineered into multiple modules because the current implementation is already functional and tested in a practical MikroTik environment.
+
+---
+
+Project Structure
 
 Mikrotik-Network-Compliance/
+│
 ├── Mikrotik_compliance.py
 ├── Mikrotik_compliance_HTML.py
 ├── requirements.txt
 ├── .gitignore
 └── README.md
 
-#Technology Stack
+Main Scripts
 
-Python
+"Mikrotik_compliance.py"
 
-MikroTik RouterOS
+Runs the assessment and displays the results in the terminal.
+Mikrotik_compliance_HTML.py"
 
-RouterOS API
+Runs the assessment and generates a formatted HTML report.
 
-librouteros
-Network Security
+---
 
-Network Automation
+Technology Stack
 
-HTML reporting
+- Python 3
+- MikroTik RouterOS API
+- "librouteros"
+- HTML
+- Git / GitHub
 
-
-#Requirements
-
-Python 3.x and the required Python dependency:
+Dependency:
 
 librouteros==4.2.2
 
-Install dependencies:
+---
+
+Requirements
+
+- Python 3.x
+- Network connectivity to the MikroTik router
+- RouterOS API access
+- Valid RouterOS credentials
+- "librouteros"
+
+Install the dependency:
 
 pip install -r requirements.txt
 
-#Usage
+---
+
+Usage
 
 Console Assessment
 
-Run the standard compliance checker:
+Run:
 
 python Mikrotik_compliance.py
 
-The tool connects to the configured MikroTik device, evaluates the defined controls and prints the assessment results and summary.
+The script connects to the configured MikroTik router and evaluates the configured controls.
 
-HTML Report
+Results are displayed in the terminal together with the calculated assessment score.
 
-Run the HTML reporting version:
+---
+
+HTML Assessment
+
+Run:
 
 python Mikrotik_compliance_HTML.py
 
-This version performs the same assessment workflow and generates an HTML report containing:
+The script performs the assessment and generates an HTML report.
 
-Device information
+The current implementation uses a Windows-based report path:
 
-RouterOS information
+C:\NetworkAutomation\Compliance\Mikrotik_Compliance_Report.html
 
-Compliance score
+This path is an implementation detail of the current version and can be externalized in a future version.
 
-PASS / WARNING / FAIL summary
+---
 
-Detailed assessment table
+Security and Operational Model
 
-Report generation timestamp
+The tool is designed primarily for assessment and auditing.
 
+It does not intentionally change:
 
-#Security and Operational Model
+- Firewall rules
+- NAT rules
+- IP addresses
+- Services
+- Users
+- VPN configuration
+- DNS configuration
 
-The assessment engine uses the RouterOS API to read configuration and operational information.
+The tool reads the current RouterOS configuration and evaluates it against the implemented assessment rules.
 
-The project is intentionally designed as a read-only assessment workflow:
+This makes it suitable for:
 
-Connect
-   │
-   ▼
-Collect configuration data
-   │
-   ▼
-Evaluate predefined controls
-   │
-   ▼
-Classify results
-   │
-   ▼
-Calculate score
-   │
-   ├──► Console report
-   │
-   └──► HTML report
+- Periodic configuration reviews
+- Security assessments
+- Internal IT audits
+- Network documentation
+- Pre-audit preparation
+- Baseline comparison
 
-No configuration changes are issued by the assessment engine.
+---
 
-#Scope and Limitations
+Firewall Assessment Scope
 
-This project evaluates a defined set of MikroTik RouterOS controls. It is intended to provide a repeatable technical assessment workflow rather than claim complete security coverage.
+The firewall checks include selected controls such as:
 
-The result can be affected by:
+- Established/related traffic handling
+- Invalid traffic handling
+- WAN input protection
+- WAN forward protection
 
-RouterOS version and available API properties
+These checks provide useful security indicators but do not prove that an entire firewall policy is secure.
 
-Network architecture
+A complete firewall security assessment should also consider:
 
-Device role
+- Rule ordering
+- Allowed services
+- Trusted source networks
+- Inter-VLAN policies
+- VPN access policies
+- NAT behavior
+- Logging
+- Address lists
+- Application requirements
+- Network architecture
 
-Security requirements of the organization
+---
 
-The specific controls implemented by this project
+Practical Use Cases
 
+This project can be used as a lightweight assessment tool for:
 
-For production security assessments, the defined rules should be reviewed against the organization's security baseline and applicable standards.
+Enterprise Networks
 
-#Practical Use Cases
+Periodic review of MikroTik routers used in branch or office environments.
 
-The project can be used as a foundation for:
+Security Audits
 
-Periodic MikroTik security reviews
+Automated collection of selected security-related configuration indicators.
 
-Configuration compliance checks
+Network Administration
 
-Network security assessments
+Quick visibility into device configuration and security posture.
 
-Pre-audit technical reviews
+Documentation
 
-Baseline verification
+Generate a repeatable assessment report for network infrastructure.
 
-Automated security reporting
+Network Automation Portfolio
 
-Network operations automation
+Demonstrates practical experience with:
 
-Expansion into multi-device compliance workflows
+- Network automation
+- RouterOS API
+- Python
+- Network security
+- Configuration assessment
+- Automated reporting
 
+---
 
-#Future Extensions
+Limitations
 
-Potential next-stage improvements include:
+The current version has several intentional limitations:
 
-Externalized configuration and credentials
+- Designed primarily for MikroTik RouterOS
+- Single-device assessment
+- Assessment rules are implemented directly in the Python scripts
+- Credentials and connection parameters are currently configured in the scripts
+- HTML report path is currently Windows-specific
+- No external configuration file
+- No centralized logging framework
+- No JSON output
+- No automated multi-device inventory
 
-Structured JSON output
+These limitations are candidates for future development rather than requirements for the current implementation.
 
-Centralized logging
+---
 
-Multi-device assessment
+Future Extensions
 
-Configuration baseline comparison
+Possible future improvements include:
 
-Scheduled assessments
+- External configuration using YAML/JSON
+- Secure credential management
+- Multi-device assessment
+- Inventory-based execution
+- JSON output
+- CSV reporting
+- Centralized logging
+- Historical compliance tracking
+- Configuration baseline comparison
+- Custom security policies
+- Mapping checks to standards such as CIS or organizational security baselines
+- Automated scheduled assessments
+- REST API integration
+- Dashboard visualization
 
-Report archiving
+---
 
-Additional RouterOS security controls
+Project Context
 
-Rule profiles for different organizational security baselines
+This project is part of a broader practical network automation portfolio focused on:
+Network Administration
+        ↓
+MikroTik / Routing / Firewall
+        ↓
+Python Network Automation
+        ↓
+Configuration Assessment
+        ↓
+Security Automation
+        ↓
+Network DevOps
 
-Integration with centralized monitoring or reporting systems
+The objective is to demonstrate practical engineering capabilities through real-world-oriented automation projects rather than isolated programming exercises.
 
+---
 
-#Project Context
+Disclaimer
 
-This repository represents a practical Network Security + Network Automation implementation built around MikroTik RouterOS.
+This tool provides automated configuration checks based on the rules implemented in the project.
 
-The project focuses on turning manual configuration review into a repeatable, programmatic assessment workflow and presenting the results in a form suitable for operational review.
+It is not a replacement for:
 
-Sensitive infrastructure details are intentionally not part of the project documentation.
+- Professional security auditing
+- Penetration testing
+- Full firewall review
+- Formal compliance certification
+- Organizational risk assessment
 
-#Disclaimer
+The assessment score is specific to this project and should be interpreted within the scope of the implemented checks.
 
-This tool is intended for authorized network administration, security assessment, testing and educational purposes.
+---
 
-Only run the assessment against MikroTik devices for which you have explicit authorization.
-
-#Author
+Author
 
 Mohammad Ebrahimpour
 
-Network & IT Infrastructure | Network Automation | Network Security
+Network & IT Infrastructure Specialist
+
+Focus areas:
+
+- Network Administration
+- MikroTik
+- Network Security
+- Network Automation
+- Python
+- Infrastructure Automation
+- IT Infrastructure
